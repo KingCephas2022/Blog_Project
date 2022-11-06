@@ -12,7 +12,7 @@
             {% if user.id in post.likes|map(attribute="author")|list %}
             <i
               class="fas fa-thumbs-up"
-              id="like-button-{{post.id}}"
+              id="like-button-{{post, id}}"
               onclick="like({post, id})"
             ></i>
             {% else %}
