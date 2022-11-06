@@ -1,10 +1,10 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+sqlalchemy import SQLAlchemy
 import os
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from sqlalchemy.sql import func
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 base_dir = os.path.dirname(os.path.realpath(__file__))
 current_user= os.environ.get('USERNAME')
@@ -103,8 +103,78 @@ def sign_up():
             return redirect(url_for("login"))
     return render_template('signup.html')
 
+# To post
+
+def post():
+
+    if request.method =='POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        date_posted = datetime.utcnow()
+
+        title = post.query.filter_by(title=title).first()
+        if title:
+            return redirect(url_for('post'))
+
+        content = post.query.filter_by(content=content).first()
+        if content:
+            return redirect(url_for('blog'))
+
+        new_post = post(title=title, content=content, date_posted=date_posted) 
+
+        db.session.add(new_post)
+        db.session.commit()
+
+        return redirect(url_for('index'))
+
+    return render_template('post.html')
+
+### To edit 
+
+@app.route("/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+def edit(id):
+    blog = User.query.get_or_404(id)
+
+    if current_user.username == blog.author:
+        if request.method == 'POST':
+            blog.title = request.form['title']
+            blog.content = request.form['content']
+
+            db.session.commit()
+            flash("Heads up! Post created")
+            return redirect(url_for('home', id=blog.id))
+        
+        context = {'blog': blog}
+        return redirect(url_for('edit'))
+
+    return render_template('edit.html', blog=blog)
+
+### To delete
+
+@app.route("/delete/<int:id>", methods=["GET", "POST"])
+@login_required
+def delete(id):
+    deleteblog= User.query.get_or_404(id)
+
+    if current_user.username == post.author:
+        if request.method == 'POST':
+            db.session.delete(deleteblog)
+            db.session.commit()
+            flash("Post deleted")
+            return redirect(url_for('home'))
+
+@app.route("/about")
+def about():
+    return render_template('about.html')
+
+@app.route("/contact")
+def contact():
+    return render_template('contact.html')
+
 if __name__ == '__main__':
         app.run(debug=True)
 
 
 
+        
