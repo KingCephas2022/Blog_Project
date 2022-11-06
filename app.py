@@ -13,7 +13,7 @@ current_user= os.environ.get('USERNAME')
 
 app = Flask(__name__, template_folder='templates')
 
-app.config["SQLALCHEMY_DATABASE_URI"]='sqlite:///' + os.path.join(base_dir, 'users.db')
+app.config["SQLALCHEMY_DATABASE_URI"]='sqlite:///' + os.path.join(base_dir, 'blog.db')
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = '923054541f636448117274bc' 
 
@@ -33,14 +33,15 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User {self.username}"
 
-class Post(db.model):
-    __tablename__ = "posts"
+class Blog(db.Model):
+    __tablename__ = "blog"
+    id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable = False)
     content = db.Column(db.String(150), nullable = True)
     date_posted = db.Column(db.DateTime(timezone=True), default=func.now())
 
     def __repr__(self):
-        return f"Post {self.title}"
+        return f"Blog {self.title}"
 
 
 @app.route('/')
@@ -146,28 +147,28 @@ def post():
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 def edit(id):
-    blog = User.query.get_or_404(id)
+    edit = post.query.get_or_404(id)
 
-    if current_user.username == blog.author:
+    if current_user.username == post.author:
         if request.method == 'POST':
-            blog.title = request.form['title']
-            blog.content = request.form['content']
+            post.title = request.form['title']
+            post.content = request.form['content']
 
             db.session.commit()
             flash("Heads up! Post created")
-            return redirect(url_for('home', id=blog.id))
+            return redirect(url_for('home', id=post.id))
         
-        context = {'blog': blog}
+        context = {'post': post}
         return redirect(url_for('edit'))
 
-    return render_template('edit.html', blog=blog)
+    return render_template('edit.html', post=post)
 
 ### To delete
 
 @app.route("/delete/<int:id>", methods=["GET", "POST"])
 @login_required
 def delete(id):
-    deleteblog= User.query.get_or_404(id)
+    deleteblog= post.query.get_or_404(id)
 
     if current_user.username == post.author:
         if request.method == 'POST':
