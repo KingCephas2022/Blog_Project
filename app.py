@@ -1,4 +1,5 @@
-sqlalchemy import SQLAlchemy
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 import os
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from sqlalchemy.sql import func
