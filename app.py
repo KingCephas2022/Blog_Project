@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import os
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from sqlalchemy.sql import func
@@ -18,7 +19,7 @@ app.config["SECRET_KEY"] = '923054541f636448117274bc'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
-
+migrate = Migrate(app, db)
 class User(db.Model, UserMixin):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -31,6 +32,16 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User {self.username}"
+
+class Post(db.model):
+    __tablename__ = "posts"
+    title = db.Column(db.String(150), nullable = False)
+    content = db.Column(db.String(150), nullable = True)
+    date_posted = db.Column(db.DateTime(timezone=True), default=func.now())
+
+    def __repr__(self):
+        return f"Post {self.title}"
+
 
 @app.route('/')
 @app.route('/home')
@@ -106,8 +117,8 @@ def sign_up():
 
 # To post
 
+@app.route("/post", methods=['POST'])
 def post():
-
     if request.method =='POST':
         title = request.form.get('title')
         content = request.form.get('content')
@@ -175,7 +186,3 @@ def contact():
 
 if __name__ == '__main__':
         app.run(debug=True)
-
-
-
-        
